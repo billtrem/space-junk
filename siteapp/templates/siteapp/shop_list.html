@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ site.display_name|default:"Space Junk" }} – Shop</title>
+    <link rel="stylesheet" href="{% static 'siteapp/css/styles.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <h1>{{ site.display_name|default:"Space Junk" }}</h1>
+
+        {% if site and site.tagline %}
+            <p class="tagline">{{ site.tagline }}</p>
+        {% endif %}
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/">Live</a></li>
+                <li class="active"><a href="{% url 'shop_list' %}">Shop</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <section class="shop">
+            <h2>Shop – Old Junk</h2>
+
+            {% if items %}
+                <div class="shop-grid">
+                    {% for item in items %}
+                        <article class="shop-item">
+                            <a href="{% url 'shop_detail' slug=item.slug %}">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                                {% endif %}
+                                <h3>{{ item.title }}</h3>
+                            </a>
+                            <p class="price">£{{ item.price }}</p>
+                            {% if item.is_sold %}
+                                <p class="sold">SOLD</p>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No junk in the shop yet. Check back soon.</p>
+            {% endif %}
+        </section>
+    </main>
+
+</div>
+
+</body>
+</html>
