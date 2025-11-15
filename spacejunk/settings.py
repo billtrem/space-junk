@@ -24,15 +24,21 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "0.0.0.0",
+
+    # Custom domain
+    "space-junk.biz",
+    "www.space-junk.biz",
 ]
 
-# Allow all Railway app domains safely
-ALLOWED_HOSTS.append("*.up.railway.app")
+# Allow all Railway app subdomains (Django-style wildcard)
+ALLOWED_HOSTS.append(".up.railway.app")
 
 # Allow explicitly provided hosts via environment (comma-separated)
 extra_hosts = os.getenv("ALLOWED_HOSTS", "")
 if extra_hosts:
-    ALLOWED_HOSTS.extend([h.strip() for h in extra_hosts.split(",") if h.strip()])
+    ALLOWED_HOSTS.extend(
+        [h.strip() for h in extra_hosts.split(",") if h.strip()]
+    )
 
 # -------------------------------
 # PROXY / HTTPS (Railway)
@@ -140,6 +146,7 @@ STATICFILES_DIRS = [BASE_DIR / "siteapp" / "static"]
 # Railway static URL override (fixes missing slashes)
 railway_static = os.getenv("RAILWAY_STATIC_URL")
 if railway_static:
+    # Ensure it looks like "/something/"
     if not railway_static.startswith("/"):
         railway_static = "/" + railway_static
     if not railway_static.endswith("/"):
@@ -154,6 +161,11 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# -------------------------------
+# MEDIA (for completeness)
+# -------------------------------
+MEDIA_URL = "/media/"
 
 # -------------------------------
 # CLOUDINARY
