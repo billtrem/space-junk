@@ -3,23 +3,26 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
+# --------------------------------------------------
+# BASE DIR
+# --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env (local only)
+# Load .env variables (local only)
 load_dotenv(BASE_DIR / ".env")
 
-# -------------------------------
+# --------------------------------------------------
 # SECURITY
-# -------------------------------
+# --------------------------------------------------
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise Exception("SECRET_KEY is missing from .env or Railway variables")
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-# -------------------------------------------------------------------
-# ALLOWED_HOSTS — local + Railway + custom domain
-# -------------------------------------------------------------------
+# --------------------------------------------------
+# HOSTS
+# --------------------------------------------------
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
@@ -30,19 +33,19 @@ ALLOWED_HOSTS = [
     "www.space-junk.biz",
 ]
 
-# Allow all Railway app subdomains (Django-style wildcard)
+# Allow all Railway app subdomains
 ALLOWED_HOSTS.append(".up.railway.app")
 
-# Allow explicitly provided hosts via environment (comma-separated)
+# Allow extra hosts from env
 extra_hosts = os.getenv("ALLOWED_HOSTS", "")
 if extra_hosts:
     ALLOWED_HOSTS.extend(
         [h.strip() for h in extra_hosts.split(",") if h.strip()]
     )
 
-# -------------------------------
-# PROXY / HTTPS (Railway)
-# -------------------------------
+# --------------------------------------------------
+# PROXY / HTTPS
+# --------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = [
@@ -51,9 +54,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.space-junk.biz",
 ]
 
-# -------------------------------
+# --------------------------------------------------
 # APPS
-# -------------------------------
+# --------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -70,12 +73,12 @@ INSTALLED_APPS = [
     "siteapp",
 ]
 
-# -------------------------------
+# --------------------------------------------------
 # MIDDLEWARE
-# -------------------------------
+# --------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # static files on Railway
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -86,9 +89,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "spacejunk.urls"
 
-# -------------------------------
+# --------------------------------------------------
 # TEMPLATES
-# -------------------------------
+# --------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -107,9 +110,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "spacejunk.wsgi.application"
 
-# -------------------------------
+# --------------------------------------------------
 # DATABASE (SQLite local → Postgres on Railway)
-# -------------------------------
+# --------------------------------------------------
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -118,9 +121,9 @@ DATABASES = {
     )
 }
 
-# -------------------------------
+# --------------------------------------------------
 # PASSWORD VALIDATION
-# -------------------------------
+# --------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -128,29 +131,28 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# -------------------------------
+# --------------------------------------------------
 # INTERNATIONAL
-# -------------------------------
+# --------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# -------------------------------
+# --------------------------------------------------
 # STATIC FILES
-# -------------------------------
+# --------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "siteapp" / "static"]
 
-# Railway static URL override (fixes missing slashes)
+# Railway STATIC_URL override
 railway_static = os.getenv("RAILWAY_STATIC_URL")
 if railway_static:
-    # Ensure it looks like "/something/"
     if not railway_static.startswith("/"):
         railway_static = "/" + railway_static
     if not railway_static.endswith("/"):
-        railway_static += "/"
+        railway_static = railway_static + "/"
     STATIC_URL = railway_static
 
 STORAGES = {
@@ -162,14 +164,14 @@ STORAGES = {
     },
 }
 
-# -------------------------------
-# MEDIA (for completeness)
-# -------------------------------
+# --------------------------------------------------
+# MEDIA (not used often with Cloudinary, but good practice)
+# --------------------------------------------------
 MEDIA_URL = "/media/"
 
-# -------------------------------
+# --------------------------------------------------
 # CLOUDINARY
-# -------------------------------
+# --------------------------------------------------
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
