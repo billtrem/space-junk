@@ -18,7 +18,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise Exception("SECRET_KEY is missing from .env or Railway variables")
 
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+# --------------------------------------------------
+# DEBUG (force ON for local debugging)
+# --------------------------------------------------
+DEBUG = True
 
 # --------------------------------------------------
 # HOSTS
@@ -165,7 +168,7 @@ STORAGES = {
 }
 
 # --------------------------------------------------
-# MEDIA (not used often with Cloudinary, but good practice)
+# MEDIA
 # --------------------------------------------------
 MEDIA_URL = "/media/"
 

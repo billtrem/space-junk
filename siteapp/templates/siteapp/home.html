@@ -1,138 +1,68 @@
+{% extends "siteapp/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>{% if site %}{{ site.site_name }}{% else %}Space Junk{% endif %}</title>
-    <link rel="stylesheet" href="{% static 'siteapp/css/styles.css' %}">
-</head>
-<body>
 
-<div class="layout">
+{% block title %}SPACE JUNK — HOME{% endblock %}
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h1>{% if site %}{{ site.site_name }}{% else %}Space Junk{% endif %}</h1>
+{% block content %}
 
-        {% if site and site.tagline %}
-            <p class="tagline">{{ site.tagline }}</p>
-        {% endif %}
+<!-- TELESHOPPING SECTION (TOP) -->
+<section class="live-section">
 
-        {% if site and site.contact_email %}
-            <p class="contact">
-                Contact:
-                <a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a>
-            </p>
-        {% endif %}
+    <div class="live-bar">
+        <span class="live-dot"></span> LIVE
+    </div>
 
-        <ul class="social-links">
-            {% if site and site.instagram_url %}
-                <li><a href="{{ site.instagram_url }}" target="_blank">Instagram</a></li>
-            {% endif %}
-            {% if site and site.bandcamp_url %}
-                <li><a href="{{ site.bandcamp_url }}" target="_blank">Bandcamp</a></li>
-            {% endif %}
-            {% if site and site.youtube_url %}
-                <li><a href="{{ site.youtube_url }}" target="_blank">YouTube</a></li>
-            {% endif %}
-        </ul>
-    </aside>
+    <h2 class="section-title">
+        TELESHOPPING — STREAMING NOW
+    </h2>
 
-    <!-- Main content -->
-    <main class="content">
+    <!-- MAIN LIVESTREAM VIDEO -->
+    <iframe 
+        class="live-video"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        allowfullscreen>
+    </iframe>
 
-        <!-- HERO -->
-        <section class="hero">
-            {% if site and site.hero_image %}
-                <img src="{{ site.hero_image.url }}" alt="{{ site.site_name }}">
-            {% endif %}
-            {% if site and site.bio %}
-                <p class="bio">{{ site.bio|linebreaksbr }}</p>
-            {% endif %}
-        </section>
+    <!-- CHAT PANEL (NEW) -->
+    <div class="chat-box">
+        <h3 class="chat-title">LIVE CHAT</h3>
 
-        <!-- LIVE STREAM -->
-        <section class="livestream">
-            <h2>Live Stream</h2>
-            {% if live_stream %}
-                <div class="live-now">
-                    <h3>Now live: {{ live_stream.title }}</h3>
-                    {% if live_stream.description %}
-                        <p>{{ live_stream.description|linebreaksbr }}</p>
-                    {% endif %}
-                    <div class="video">
-                        <iframe
-                            src="{{ live_stream.video_embed_url }}"
-                            frameborder="0"
-                            allowfullscreen
-                        ></iframe>
-                    </div>
-                </div>
-            {% else %}
-                <p>No live stream right now. Check out past streams below.</p>
-            {% endif %}
-        </section>
+        <!-- Replace this iframe with your real chat embed -->
+        <iframe 
+            class="chat-embed"
+            src="https://www.youtube.com/live_chat?v=dQw4w9WgXcQ&embed_domain=localhost"
+            allowfullscreen>
+        </iframe>
+    </div>
 
-        <!-- PAST STREAMS -->
-        <section class="past-streams">
-            <h2>Past Streams</h2>
-            <ul class="stream-list">
-                {% for stream in past_streams %}
-                    <li>
-                        <strong>{{ stream.title }}</strong>
-                        {% if stream.start_time %}
-                            <span class="date">
-                                {{ stream.start_time|date:"j M Y, H:i" }}
-                            </span>
-                        {% endif %}
-                    </li>
-                {% empty %}
-                    <li>No past streams yet.</li>
-                {% endfor %}
-            </ul>
-        </section>
+</section>
 
-        <!-- SHOP -->
-        <section class="shop">
-            <h2>Shop – Old Junk</h2>
-            {% if shop_items %}
-                <div class="shop-grid">
-                    {% for item in shop_items %}
-                        <article class="shop-item{% if item.is_sold %} sold{% endif %}">
-                            <h3>{{ item.title }}</h3>
 
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.title }}">
-                            {% endif %}
 
-                            {% if item.description %}
-                                <p>{{ item.description|linebreaksbr }}</p>
-                            {% endif %}
+<!-- SINGLE PREORDER FEATURE BLOCK -->
+<section class="preorder-section">
 
-                            {% if item.price %}
-                                <p class="price">£{{ item.price }}</p>
-                            {% endif %}
+    <div class="preorder-box">
 
-                            {% if item.is_sold %}
-                                <p class="sold-label">SOLD</p>
-                            {% elif item.purchase_url %}
-                                <p>
-                                    <a href="{{ item.purchase_url }}" target="_blank" class="btn">
-                                        Buy / more info
-                                    </a>
-                                </p>
-                            {% endif %}
-                        </article>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p>No junk in the shop yet. Coming soon.</p>
-            {% endif %}
-        </section>
+        <h2 class="preorder-title">PRE-ORDER NOW</h2>
 
-    </main>
+        <img src="{% static 'siteapp/images/album1.jpg' %}" class="preorder-img" alt="Album Cover">
 
-</div>
+        <p class="preorder-text">
+            Pre-order the <strong>Hiraeth HiFi — Palestine Compilation</strong><br>
+            Email:
+            <br>
+            <a href="mailto:spacejunkpunks@gmail.com" class="email-link">
+                spacejunkpunks@gmail.com
+            </a>
+        </p>
 
-</body>
-</html>
+        <div class="preorder-banner">
+            LIMITED RUN • SUPPORT THE RELEASE • PRE-ORDER TODAY
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
