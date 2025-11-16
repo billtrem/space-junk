@@ -19,25 +19,38 @@
     <!-- MAIN LIVESTREAM VIDEO -->
     <iframe 
         class="live-video"
-        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        src="{% if live_stream %}{{ live_stream.video_embed_url }}{% elif active_video %}{{ active_video.embed_url }}{% else %}https://www.youtube.com/embed/dQw4w9WgXcQ{% endif %}"
         allowfullscreen>
     </iframe>
 
-    <!-- CHAT PANEL (NEW) -->
-    <div class="chat-box">
-        <h3 class="chat-title">LIVE CHAT</h3>
+    <!-- ============================
+         CHAOTIC LIVE CHAT
+       ============================ -->
+    <div class="chat-wrapper">
 
-        <!-- Replace this iframe with your real chat embed -->
-        <iframe 
-            class="chat-embed"
-            src="https://www.youtube.com/live_chat?v=dQw4w9WgXcQ&embed_domain=localhost"
-            allowfullscreen>
-        </iframe>
+        <h3 class="chat-title">LIVE CHAT — TOTAL CHAOS</h3>
+
+        <!-- MESSAGE FEED -->
+        <div id="chat-feed" class="chat-feed">
+            {% for msg in chat_messages %}
+                <div class="chat-msg">
+                    <span class="chat-time">{{ msg.created_at|date:"H:i:s" }}</span>
+                    <span class="chat-text">{{ msg.text }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- TEXT INPUT -->
+        <div class="chat-input-row">
+            <input id="chat-input" class="chat-input" type="text" placeholder="Say something stupid..." maxlength="200">
+            <button id="chat-send" class="chat-send">SEND</button>
+        </div>
+
     </div>
 
 </section>
 
-<!-- SINGLE PREORDER ITEM (REPLACES ENTIRE PRODUCT GRID) -->
+<!-- PREORDER SECTION -->
 <section class="preorder-section">
 
     <div class="preorder-box">
@@ -46,8 +59,8 @@
         <img src="{% static 'siteapp/images/album1.jpg' %}" class="preorder-img">
 
         <p class="preorder-text">
-            Pre-order <strong>Bargain Bass</strong>, the brand new EP from SPACE JUNK — made for deep space transmissions and terrestrial bargain bins alike.<br><br>
-            To pre-order, email:
+            Pre-order <strong>Bargain Bass</strong>, the brand new EP from SPACE JUNK.<br>
+            Email:
             <br>
             <a href="mailto:sales@space-junk.biz" class="email-link">
                 sales@space-junk.biz
@@ -61,5 +74,55 @@
 
 </section>
 
+
+<!-- ============================
+     CHAT JAVASCRIPT
+     ============================ -->
+<script>
+// Auto-refresh chat every 1 second
+function refreshChat() {
+    fetch("/chat/get/")
+        .then(response => response.json())
+        .then(data => {
+            const feed = document.getElementById("chat-feed");
+            feed.innerHTML = "";
+            data.forEach(msg => {
+                feed.innerHTML += `
+                    <div class="chat-msg">
+                        <span class="chat-time">${msg.time}</span>
+                        <span class="chat-text">${msg.text}</span>
+                    </div>
+                `;
+            });
+            feed.scrollTop = feed.scrollHeight; // auto scroll
+        });
+}
+setInterval(refreshChat, 1000);
+
+// Send message
+document.getElementById("chat-send").onclick = function () {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const formData = new FormData();
+    formData.append("text", text);
+
+    fetch("/chat/post/", {
+        method: "POST",
+        body: formData,
+    }).then(() => {
+        input.value = "";
+        refreshChat();
+    });
+};
+
+// Press ENTER to send
+document.getElementById("chat-input").addEventListener("keyup", function (e) {
+    if (e.key === "Enter") {
+        document.getElementById("chat-send").click();
+    }
+});
+</script>
 
 {% endblock %}
