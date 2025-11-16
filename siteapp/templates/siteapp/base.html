@@ -4,34 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}SPACE JUNK{% endblock %}</title>
+
+    <!-- MAIN STYLESHEET -->
     <link rel="stylesheet" href="{% static 'siteapp/css/styles.css' %}">
 </head>
 <body>
 
-<!-- TOP STRIP -->
-<div class="top-strip">
-    EVERYTHING MUST GO • WHOLESALE PRICES • DIRECT TO THE PUBLIC
-</div>
-
-<!-- GLOBAL HEADER -->
-<header class="header">
-
-    <!-- LEFT LOGO (bigger + no border, handled in CSS) -->
-    <img src="{% static 'siteapp/images/logo.png' %}" class="header-logo" alt="Space Junk Logo">
-
-    <!-- CENTRE TITLE -->
-    <div class="shop-title">
-        <h1>SPACE JUNK LTD</h1>
-        <p class="subtitle">REAL BARGAINS • REAL STOCK • REAL VALUE</p>
+    <!-- =====================================================
+         TOP STRIP — ALWAYS VISIBLE
+         ===================================================== -->
+    <div class="top-strip">
+        EVERYTHING MUST GO • WHOLESALE PRICES • DIRECT TO THE PUBLIC
     </div>
 
-</header>
 
-<!-- PAGE CONTENT -->
-<main>
-    {% block content %}
-    {% endblock %}
-</main>
+    <!-- =====================================================
+         GLOBAL HEADER — LOGO + TITLE
+         ===================================================== -->
+    <header class="header">
+
+        <!-- LEFT LOGO -->
+        <img src="{% static 'siteapp/images/logo.png' %}" 
+             class="header-logo" 
+             alt="Space Junk Logo">
+
+        <!-- SITE TITLE + SLOGAN -->
+        <div class="shop-title">
+            <h1>SPACE JUNK LTD</h1>
+            <p class="subtitle">REAL BARGAINS • REAL STOCK • REAL VALUE</p>
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+         ===================================================== -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
 
 </body>
 </html>
