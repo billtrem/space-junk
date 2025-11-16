@@ -1,34 +1,48 @@
 {% extends "siteapp/base.html" %}
 {% load static %}
 
-{% block title %}SPACE JUNK — HOME{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 
-<!-- TELESHOPPING SECTION (TOP) -->
+<!-- ===========================================================
+     TELESHOPPING SECTION
+=========================================================== -->
 <section class="live-section">
 
+    {% if live_stream %}
     <div class="live-bar">
-        <span class="live-dot"></span> LIVE
+        <span class="live-dot"></span> LIVE NOW
+    </div>
+    {% endif %}
+
+    <h2 class="section-title">TELESHOPPING — STREAMING NOW</h2>
+
+    <!-- MAIN VIDEO -->
+    <div class="video-container">
+        {% if live_stream %}
+            {{ live_stream.video_embed_code|safe }}
+        {% elif active_video %}
+            {{ active_video.embed_code|safe }}
+        {% else %}
+            <iframe class="live-video"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                allowfullscreen></iframe>
+        {% endif %}
     </div>
 
-    <h2 class="section-title">
-        TELESHOPPING — STREAMING NOW
-    </h2>
 
-    <!-- MAIN LIVESTREAM VIDEO -->
-    <iframe 
-        class="live-video"
-        src="{% if live_stream %}{{ live_stream.video_embed_url }}{% elif active_video %}{{ active_video.embed_url }}{% else %}https://www.youtube.com/embed/dQw4w9WgXcQ{% endif %}"
-        allowfullscreen>
-    </iframe>
-
-    <!-- ============================
-         CHAOTIC LIVE CHAT
-       ============================ -->
+    <!-- ===========================================================
+         CHAT SYSTEM
+    =========================================================== -->
     <div class="chat-wrapper">
 
-        <h3 class="chat-title">LIVE CHAT — TOTAL CHAOS</h3>
+        <h3 class="chat-title">LIVE CHAT</h3>
+
+        <div id="chat-warning" class="chat-warning" style="display:none;">
+            <strong>Join the chat!</strong><br>
+            Enter your name + email to start sending messages.
+        </div>
 
         <!-- MESSAGE FEED -->
         <div id="chat-feed" class="chat-feed">
@@ -40,51 +54,216 @@
             {% endfor %}
         </div>
 
-        <!-- TEXT INPUT -->
+        <!-- INPUT -->
         <div class="chat-input-row">
-            <input id="chat-input" class="chat-input" type="text" placeholder="Say something stupid..." maxlength="200">
-            <button id="chat-send" class="chat-send">SEND</button>
+            <input 
+                id="chat-input" 
+                class="chat-input locked"
+                type="text"
+                placeholder="Ask about products, availability, or make an offer…"
+                maxlength="200">
+            <button id="chat-send" class="chat-send locked">SEND</button>
         </div>
 
     </div>
 
 </section>
-
-<!-- PREORDER SECTION -->
+<!-- ===========================================================
+     PREORDER BARGAINS TODAY!
+=========================================================== -->
+<!-- ===========================================================
+     PREORDER BARGAINS TODAY!
+=========================================================== -->
 <section class="preorder-section">
 
-    <div class="preorder-box">
-        <h2 class="preorder-title">PRE-ORDER — BARGAIN BASS EP</h2>
+    <!-- MATCH THE LIVESTREAM OUTER CONTAINER -->
+    <div class="live-section" style="margin-top:40px;">
 
-        <img src="{% static 'siteapp/images/album1.jpg' %}" class="preorder-img">
+        <!-- FULL WIDTH BIG YELLOW BANNER -->
+        <div class="preorder-big-banner">
+            <h2>PRE-ORDER BARGAINS TODAY!</h2>
 
-        <p class="preorder-text">
-            Pre-order <strong>Bargain Bass</strong>, the brand new EP from SPACE JUNK.<br>
-            Email:
-            <br>
-            <a href="mailto:sales@space-junk.biz" class="email-link">
-                sales@space-junk.biz
-            </a>
-        </p>
+            <p>
+                Pre-order from <strong>SPACE JUNK</strong>.<br>
+                Email us directly:<br>
+                <a href="mailto:sales@space-junk.biz" class="email-link">
+                    sales@space-junk.biz
+                </a>
+            </p>
 
-        <div class="preorder-banner">
-            LIMITED EDITION • BUY DIRECT FROM THE SOURCE • PRE-ORDER TODAY
+            <div class="preorder-big-tagline">
+                LIMITED EDITION • BUY DIRECT • PRE-ORDER TODAY
+            </div>
         </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid">
+            {% for item in shop_items %}
+            <div class="product-card">
+
+                <img src="{{ item.image.url }}" alt="{{ item.title }}">
+
+                <div class="product-title">{{ item.title }}</div>
+
+                <div class="product-description">{{ item.description }}</div>
+
+                <div class="product-price">£{{ item.price }}</div>
+
+                <a href="mailto:sales@space-junk.biz?subject=Pre-Order%20{{ item.title }}"
+                class="product-buy">
+                    BUY NOW VIA EMAIL
+                </a>
+
+            </div>
+            {% empty %}
+                <p style="text-align:center;font-weight:900;">
+                    No products available right now.
+                </p>
+            {% endfor %}
+        </div>
+
     </div>
 
 </section>
 
 
-<!-- ============================
-     CHAT JAVASCRIPT
-     ============================ -->
+
+<!-- ===========================================================
+     SUBSCRIBE MODAL (required for chat)
+=========================================================== -->
+<div id="subscribeModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h3>Join the Chat</h3>
+
+        <p class="modal-text">
+            Enter your <strong>name</strong> and <strong>email</strong> to unlock live chat.
+        </p>
+
+        <input id="modalName" class="modal-input" type="text" placeholder="Your name (optional)">
+        <input id="modalEmail" class="modal-input" type="email" placeholder="you@example.com">
+
+        <button id="modalSubmit" class="modal-button">Continue</button>
+    </div>
+</div>
+
+
+
+<!-- ===========================================================
+     CHAT + MODAL JAVASCRIPT
+=========================================================== -->
 <script>
-// Auto-refresh chat every 1 second
+// ------------------------------
+// LocalStorage
+// ------------------------------
+function loadSubscriber() {
+    try { return JSON.parse(localStorage.getItem("sj_subscriber")); }
+    catch { return null; }
+}
+
+function saveSubscriber(name, email) {
+    localStorage.setItem("sj_subscriber", JSON.stringify({ name, email }));
+}
+
+window.SUBSCRIBER = loadSubscriber();
+
+function isSubscribed() {
+    return window.SUBSCRIBER && window.SUBSCRIBER.email;
+}
+
+
+// ------------------------------
+// Lock / unlock UI visually
+// ------------------------------
+function updateChatLockState() {
+    const input = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("chat-send");
+    const warning = document.getElementById("chat-warning");
+
+    if (!isSubscribed()) {
+        input.classList.add("locked");
+        sendBtn.classList.add("locked");
+        warning.style.display = "block";
+    } else {
+        input.classList.remove("locked");
+        sendBtn.classList.remove("locked");
+        warning.style.display = "none";
+    }
+}
+
+updateChatLockState();
+
+
+// ------------------------------
+// Force modal when clicking input or button
+// ------------------------------
+document.getElementById("chat-input").addEventListener("mousedown", function (e) {
+    if (!isSubscribed()) {
+        e.preventDefault();
+        showModal();
+    }
+});
+
+document.getElementById("chat-send").addEventListener("mousedown", function (e) {
+    if (!isSubscribed()) {
+        e.preventDefault();
+        showModal();
+    }
+});
+
+// Prevent typing
+document.getElementById("chat-input").addEventListener("keydown", function (e) {
+    if (!isSubscribed()) {
+        e.preventDefault();
+        showModal();
+    }
+});
+
+
+// ------------------------------
+// Modal controls
+// ------------------------------
+function showModal() {
+    document.getElementById("subscribeModal").style.display = "flex";
+}
+
+function hideModal() {
+    document.getElementById("subscribeModal").style.display = "none";
+}
+
+document.getElementById("modalSubmit").onclick = function () {
+    const name = document.getElementById("modalName").value.trim();
+    const email = document.getElementById("modalEmail").value.trim();
+
+    if (!email) {
+        alert("Please enter your email.");
+        return;
+    }
+
+    fetch("/signup-email/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+    });
+
+    saveSubscriber(name || "Guest", email);
+    window.SUBSCRIBER = loadSubscriber();
+
+    hideModal();
+    updateChatLockState();
+};
+
+
+// ------------------------------
+// Refresh chat
+// ------------------------------
 function refreshChat() {
     fetch("/chat/get/")
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             const feed = document.getElementById("chat-feed");
+            const atBottom =
+                feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 10;
+
             feed.innerHTML = "";
             data.forEach(msg => {
                 feed.innerHTML += `
@@ -94,34 +273,44 @@ function refreshChat() {
                     </div>
                 `;
             });
-            feed.scrollTop = feed.scrollHeight; // auto scroll
+
+            if (atBottom) feed.scrollTop = feed.scrollHeight;
         });
 }
+
 setInterval(refreshChat, 1000);
 
-// Send message
-document.getElementById("chat-send").onclick = function () {
+
+// ------------------------------
+// Sending messages
+// ------------------------------
+function sendMessage() {
+    if (!isSubscribed()) {
+        showModal();
+        return;
+    }
+
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
     if (!text) return;
 
-    const formData = new FormData();
-    formData.append("text", text);
-
     fetch("/chat/post/", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: window.SUBSCRIBER.name,
+            email: window.SUBSCRIBER.email,
+            text: text
+        })
     }).then(() => {
         input.value = "";
         refreshChat();
     });
-};
+}
 
-// Press ENTER to send
-document.getElementById("chat-input").addEventListener("keyup", function (e) {
-    if (e.key === "Enter") {
-        document.getElementById("chat-send").click();
-    }
+document.getElementById("chat-send").onclick = sendMessage;
+document.getElementById("chat-input").addEventListener("keyup", e => {
+    if (e.key === "Enter") sendMessage();
 });
 </script>
 

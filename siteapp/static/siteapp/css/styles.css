@@ -1,13 +1,19 @@
 /* =====================================================
    SPACE JUNK — BRITISH BARGAIN SHOP SYSTEM
    FILE: static/siteapp/css/styles.css
-   USED BY: base.html, home.html, tele.html
+   This version includes:
+   - Dynamic ticker message
+   - Flashing slogan option
+   - Updated business tone
+   - Fixed chat scroll behaviour
+   - Email signup styling
    ===================================================== */
 
 
 /* =====================================================
    0. GLOBAL RESET & BODY
    ===================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -24,8 +30,7 @@ body {
 
 
 /* =====================================================
-   1. TOP STRIP — ALWAYS VISIBLE
-   base.html
+   1. TOP TICKER BAR (DYNAMIC)
    ===================================================== */
 
 .top-strip {
@@ -37,13 +42,21 @@ body {
     font-weight: 900;
     border-bottom: 8px solid #000;
     letter-spacing: 1px;
+
+    /* make it feel like a real teleshopping ticker */
+    animation: tickerFlash 1.6s infinite;
+}
+
+@keyframes tickerFlash {
+    0%   { background: #ffdf00; }
+    50%  { background: #ffcc00; }
+    100% { background: #ffdf00; }
 }
 
 
 
 /* =====================================================
-   2. HEADER — LOGO + TITLE ONLY
-   (No hamburger menu)
+   2. HEADER — LOGO + TITLE + NEW DYNAMIC SLOGAN
    ===================================================== */
 
 .header {
@@ -56,16 +69,14 @@ body {
     gap: 50px;
 }
 
-/* LOGO — NOW BIGGER, NO BORDER!! */
 .header-logo {
-    width: 240px;          /* bigger */
-    padding: 0;            /* clean */
-    border: none;          /* removed black frame */
+    width: 350px;
+    padding: 0;
+    border: none;
     background: none;
     object-fit: contain;
 }
 
-/* TITLE */
 .shop-title h1 {
     font-size: 64px;
     font-weight: 900;
@@ -75,18 +86,25 @@ body {
     line-height: 1;
 }
 
+/* NEW dynamic slogan */
 .subtitle {
     font-size: 22px;
     font-weight: 800;
     text-align: center;
     margin-top: 8px;
+    animation: sloganFlash 2.4s infinite;
+}
+
+@keyframes sloganFlash {
+    0%   { color: #000; }
+    50%  { color: #d60000; }
+    100% { color: #000; }
 }
 
 
 
 /* =====================================================
-   3. TELESHOPPING PANEL
-   home.html, tele.html
+   3. TELESHOPPING VIDEO PANEL
    ===================================================== */
 
 .live-section {
@@ -97,7 +115,6 @@ body {
     background: #ffffff;
 }
 
-/* LIVE indicator */
 .live-bar {
     display: flex;
     align-items: center;
@@ -117,7 +134,7 @@ body {
 
 @keyframes livePulse {
     0%   { transform: scale(1); opacity: 1; }
-    50%  { transform: scale(1.7); opacity: .25; }
+    50%  { transform: scale(1.8); opacity: .25; }
     100% { transform: scale(1); opacity: 1; }
 }
 
@@ -128,7 +145,6 @@ body {
     margin: 30px 0;
 }
 
-/* Video embed */
 .live-video {
     width: 100%;
     height: 500px;
@@ -139,158 +155,8 @@ body {
 
 
 /* =====================================================
-   4. LIVE CHAT SECTION (NEW)
+   4. CHAT MODULE
    ===================================================== */
-
-.chat-section {
-    max-width: 1300px;
-    margin: 40px auto;
-    padding: 40px;
-    border: 10px solid #000;
-    background: #ffdf00;
-    text-align: center;
-}
-
-.chat-title {
-    font-size: 48px;
-    font-weight: 900;
-    margin-bottom: 20px;
-}
-
-.chat-placeholder {
-    background: #fff;
-    border: 8px solid #000;
-    padding: 50px;
-    font-size: 26px;
-    font-weight: 900;
-}
-
-
-
-/* =====================================================
-   5. SINGLE PREORDER FEATURE BLOCK
-   ===================================================== */
-
-.preorder-section {
-    max-width: 900px;
-    margin: 40px auto 80px;
-}
-
-.preorder-box {
-    border: 10px solid #000;
-    background: #ffdf00;
-    padding: 40px;
-    text-align: center;
-}
-
-.preorder-title {
-    font-size: 50px;
-    font-weight: 900;
-    color: #d60000;
-    -webkit-text-stroke: 2px #000;
-    margin-bottom: 20px;
-}
-
-.preorder-img {
-    width: 260px;
-    height: 260px;
-    object-fit: cover;
-    border: 8px solid #000;
-    background: white;
-    margin-bottom: 20px;
-}
-
-.preorder-text {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-.email-link {
-    font-size: 28px;
-    font-weight: 900;
-    color: #d60000;
-    text-decoration: none;
-    border-bottom: 4px solid #000;
-}
-
-.email-link:hover {
-    background: #d60000;
-    color: white;
-    padding: 4px 8px;
-}
-
-.preorder-banner {
-    background: #d60000;
-    color: #fff;
-    border: 8px solid #000;
-    padding: 14px;
-    margin-top: 25px;
-    font-weight: 900;
-    font-size: 22px;
-}
-
-
-
-/* =====================================================
-   6. POPUPS (OPTIONAL)
-   ===================================================== */
-
-.popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 440px;
-    transform: translate(-50%, -50%);
-    background: #ffffff;
-    border: 10px solid #000;
-    padding: 30px;
-    text-align: center;
-    display: none;
-    z-index: 10000;
-}
-
-.popup h2 {
-    font-size: 34px;
-    font-weight: 900;
-}
-
-.popup input {
-    width: 90%;
-    padding: 14px;
-    margin-top: 18px;
-    border: 8px solid #000;
-}
-
-.btn {
-    background: #ffdf00;
-    border: 8px solid #000;
-    padding: 14px 30px;
-    font-size: 26px;
-    font-weight: 900;
-    margin-top: 20px;
-    cursor: pointer;
-}
-
-.btn:hover {
-    background: #d60000;
-    color: white;
-}
-
-.close {
-    margin-top: 15px;
-    font-size: 20px;
-    font-weight: 900;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-
-
-
-/* ===============================================
-   CHAOTIC LIVE CHAT
-   =============================================== */
 
 .chat-wrapper {
     border: 10px solid #000;
@@ -308,7 +174,7 @@ body {
 
 .chat-feed {
     height: 260px;
-    overflow-y: scroll;
+    overflow-y: auto;
     border: 6px solid #000;
     background: #fff;
     padding: 12px;
@@ -347,7 +213,337 @@ body {
     font-weight: 900;
     cursor: pointer;
 }
+
 .chat-send:hover {
     background: #000;
     color: #ffdf00;
+}
+
+
+/* =====================================================
+   5. PREORDER PANEL
+   ===================================================== */
+
+/* Full-width yellow banner */
+.preorder-big-banner {
+    width: 100%;
+    background: #ffdf00;
+    border: 10px solid #000;
+    padding: 35px 20px;
+    text-align: center;
+    margin: 50px auto;
+}
+
+.preorder-big-banner h2 {
+    font-size: 58px;
+    font-weight: 900;
+    color: #d60000;
+    -webkit-text-stroke: 3px #000;
+    margin-bottom: 15px;
+}
+
+.preorder-big-banner p {
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 10px;
+}
+
+.preorder-big-banner .email-link {
+    font-size: 34px;
+    font-weight: 900;
+    color: #d60000;
+    text-decoration: none;
+    border-bottom: 4px solid #000;
+}
+
+.preorder-big-banner .email-link:hover {
+    background: #d60000;
+    color: #fff;
+    padding: 4px 8px;
+}
+
+/* Banner tagline box */
+.preorder-big-tagline {
+    background: #d60000;
+    color: #fff;
+    border: 8px solid #000;
+    padding: 14px;
+    margin: 20px auto;
+    font-weight: 900;
+    font-size: 26px;
+    max-width: 900px;
+}
+
+
+
+/* =====================================================
+   PRODUCT GRID
+   3 wide desktop → 2 wide mobile → 1 wide very small
+   ===================================================== */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto 80px;
+}
+
+@media (max-width: 1023px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+
+/* =====================================================
+   INDIVIDUAL PRODUCT CARD
+   ===================================================== */
+
+.product-card {
+    background: #ffdf00;
+    border: 10px solid #000;
+    padding: 20px;
+    text-align: center;
+}
+
+.product-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border: 8px solid #000;
+    background: #fff;
+    margin-bottom: 15px;
+}
+
+.product-title {
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.product-description {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.product-price {
+    font-size: 32px;
+    font-weight: 900;
+    color: #d60000;
+    -webkit-text-stroke: 1px #000;
+    margin-bottom: 15px;
+}
+
+.product-buy {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #fff;
+    color: #d60000;
+    border: 6px solid #000;
+    font-weight: 900;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.product-buy:hover {
+    background: #d60000;
+    color: #fff;
+}
+
+
+/* =====================================================
+   6. EMAIL SIGNUP FORM
+   (For future use)
+   ===================================================== */
+
+.signup-box {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    border: 8px solid #000;
+    padding: 30px;
+    text-align: center;
+}
+
+.signup-box h3 {
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.signup-box input {
+    width: 90%;
+    padding: 14px;
+    border: 6px solid #000;
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+.signup-btn {
+    background: #d60000;
+    color: #fff;
+    border: 6px solid #000;
+    font-size: 24px;
+    padding: 12px 30px;
+    font-weight: 900;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.signup-btn:hover {
+    background: black;
+    color: #ffdf00;
+}
+
+
+/* 🔥 Dynamic top ticker */
+.ticker-bar {
+    background: #ffdf00;
+    border-bottom: 8px solid #000;
+    padding: 16px 0;
+    text-align: center;
+    width: 100%;
+}
+
+.ticker-inner {
+    font-size: 30px;
+    font-weight: 900;
+    animation: tickerFlash 0.9s infinite;
+}
+
+@keyframes tickerFlash {
+    0%   { color:#000; transform:scale(1); }
+    50%  { color:#d60000; transform:scale(1.08); }
+    100% { color:#000; transform:scale(1); }
+}
+
+
+/* ============================================================
+   MODAL OVERLAY
+   ============================================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+/* ============================================================
+   SPACE JUNK STYLE MODAL — BRITISH BARGAIN SHOP EDITION
+============================================================ */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+/* MODAL BOX */
+.modal-box {
+    background: #ffdf00;
+    border: 10px solid #000;
+    width: 90%;
+    max-width: 420px;
+    padding: 30px 35px;
+    text-align: center;
+    font-family: "Arial Black", Impact, sans-serif;
+    animation: modalPop 0.2s ease-out;
+}
+
+/* POP-IN ANIMATION */
+@keyframes modalPop {
+    from { transform: scale(0.75); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* HEADING */
+.modal-box h3 {
+    font-size: 40px;
+    font-weight: 900;
+    color: #d60000;
+    -webkit-text-stroke: 2px #000;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* TEXT */
+.modal-text {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #000;
+}
+
+/* INPUTS */
+.modal-input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 18px;
+    border: 6px solid #000;
+    font-size: 20px;
+    font-weight: 700;
+    background: #fff;
+    color: #000;
+}
+
+/* BUTTON */
+.modal-button {
+    width: 100%;
+    padding: 16px 0;
+    background: #d60000;
+    color: #fff;
+    border: 6px solid #000;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-button:hover {
+    background: #000;
+    color: #ffdf00;
+}
+
+
+/* Responsive full-width 16:9 video */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 ratio */
+    height: 0;
+    border: 8px solid #000;
+    background: #000;
+    margin-bottom: 30px;
+}
+
+.video-container iframe,
+.video-container embed,
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
 }

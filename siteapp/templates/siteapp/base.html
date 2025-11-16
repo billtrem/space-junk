@@ -3,38 +3,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}SPACE JUNK{% endblock %}</title>
 
-    <!-- MAIN STYLESHEET -->
+    <title>
+        {% block title %}
+            {{ site.site_name|default:"SPACE JUNK" }}
+        {% endblock %}
+    </title>
+
     <link rel="stylesheet" href="{% static 'siteapp/css/styles.css' %}">
 </head>
 <body>
 
     <!-- =====================================================
-         TOP STRIP — ALWAYS VISIBLE
+         🟡 TOP FLASHING TICKER
          ===================================================== -->
-    <div class="top-strip">
-        EVERYTHING MUST GO • WHOLESALE PRICES • DIRECT TO THE PUBLIC
+    {% if ticker %}
+    <div class="ticker-bar">
+        <div class="ticker-inner">
+            {{ ticker.message }}
+        </div>
     </div>
+    {% endif %}
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+    <header class="header">
+        <img src="{% static 'siteapp/images/logo.png' %}"
+             class="header-logo"
+             alt="{{ site.site_name|default:'Space Junk' }} Logo">
+
+        <div class="shop-title">
+            <h1>{{ site.site_name|default:"SPACE JUNK LTD" }}</h1>
+
+            <p class="subtitle">
+                {% if site.tagline %}{{ site.tagline }}{% else %}
+                    WE BUY WHAT U DON’T WANT • WE SELL WHAT U NEED
+                {% endif %}
+            </p>
+        </div>
+    </header>
 
 
     <!-- =====================================================
-         GLOBAL HEADER — LOGO + TITLE
+         HIDDEN GLOBAL SUBSCRIBER STATE
+         Used by chat
          ===================================================== -->
-    <header class="header">
-
-        <!-- LEFT LOGO -->
-        <img src="{% static 'siteapp/images/logo.png' %}" 
-             class="header-logo" 
-             alt="Space Junk Logo">
-
-        <!-- SITE TITLE + SLOGAN -->
-        <div class="shop-title">
-            <h1>SPACE JUNK LTD</h1>
-            <p class="subtitle">REAL BARGAINS • REAL STOCK • REAL VALUE</p>
-        </div>
-
-    </header>
+    <script>
+        window.SUBSCRIBER = {
+            name: localStorage.getItem("sj_name") || "",
+            email: localStorage.getItem("sj_email") || "",
+        };
+    </script>
 
 
     <!-- =====================================================
@@ -45,6 +65,60 @@
         {% endblock %}
     </main>
 
+
+    <!-- =====================================================
+         FOOTER — EMAIL SIGNUP
+         Collects NAME + EMAIL (required for chat)
+         ===================================================== -->
+    <footer class="footer-signup">
+        <form id="emailSignupForm">
+            <label>Join the mailing list:</label>
+
+            <input type="text" id="signupName"
+                   placeholder="Your name"
+                   required>
+
+            <input type="email" id="signupEmail"
+                   placeholder="you@example.com"
+                   required>
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <script>
+        document.getElementById("emailSignupForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById("signupName").value.trim();
+            const email = document.getElementById("signupEmail").value.trim();
+
+            if (!name || !email) {
+                alert("Please enter your name and email.");
+                return;
+            }
+
+            fetch("/signup-email/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name, email: email })
+            })
+            .then(r => r.json())
+            .then(() => {
+                // save locally for chat use
+                localStorage.setItem("sj_name", name);
+                localStorage.setItem("sj_email", email);
+
+                window.SUBSCRIBER.name = name;
+                window.SUBSCRIBER.email = email;
+
+                alert("You're on the list! Thanks.");
+
+                document.getElementById("signupName").value = "";
+                document.getElementById("signupEmail").value = "";
+            });
+        });
+        </script>
+    </footer>
 
 </body>
 </html>

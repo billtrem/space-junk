@@ -4,7 +4,6 @@ from django.utils.text import slugify
 
 # ============================================================
 # 1. SITE SETTINGS
-# Global info for the website header, footer, links, etc.
 # ============================================================
 class SiteSettings(models.Model):
     site_name = models.CharField(max_length=200, default="Space Junk")
@@ -21,20 +20,19 @@ class SiteSettings(models.Model):
     def __str__(self):
         return self.site_name
 
-
 # ============================================================
-# 2. VIDEO FEED (SEPARATE FROM LIVESTREAM)
-# Useful for static video embeds, archive episodes,
-# or switching from livestream → tape → adverts, etc.
+# 2. VIDEO FEED
 # ============================================================
 class VideoFeed(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
-    embed_url = models.URLField(help_text="Embed URL (YouTube, Vimeo, Twitch, etc.)")
-    is_active = models.BooleanField(
-        default=False,
-        help_text="Tick to make this the default active feed."
+
+    # Allow full iframe embed code
+    embed_code = models.TextField(
+        help_text="Paste FULL iframe embed code (YouTube, Vimeo, Twitch, etc.)"
     )
+
+    is_active = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -45,7 +43,6 @@ class VideoFeed(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         if self.is_active:
-            # deactivate all others
             VideoFeed.objects.exclude(pk=self.pk).update(is_active=False)
         super().save(*args, **kwargs)
 
@@ -54,17 +51,21 @@ class VideoFeed(models.Model):
 
 
 # ============================================================
-# 3. LIVE STREAM MODEL
-# More detailed than VideoFeed; for timed live events.
+# 3. LIVE STREAM
 # ============================================================
 class LiveStream(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
+
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
-
     is_live = models.BooleanField(default=False)
-    video_embed_url = models.URLField(help_text="Embed URL to YouTube/Twitch/etc.")
+
+    # Allow full iframe embed code
+    video_embed_code = models.TextField(
+        help_text="Paste FULL iframe embed code for the live stream"
+    )
+
     description = models.TextField(blank=True)
 
     class Meta:
@@ -73,20 +74,17 @@ class LiveStream(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-
         if self.is_live:
-            # Ensure only one livestream is marked live
             LiveStream.objects.exclude(pk=self.pk).update(is_live=False)
-
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
 
 
+
 # ============================================================
 # 4. SHOP ITEMS
-# For physical or digital products
 # ============================================================
 class ShopItem(models.Model):
     title = models.CharField(max_length=200)
@@ -113,10 +111,33 @@ class ShopItem(models.Model):
 
 
 # ============================================================
-# 5. CHAOTIC LIVE CHAT
-# Messages appear instantly, no usernames, anon chaos.
+# 5. EMAIL SUBSCRIBER (REQUIRED FOR CHAT)
+# ============================================================
+class EmailSubscriber(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-subscribed_at"]
+
+    def __str__(self):
+        return self.email
+
+
+# ============================================================
+# 6. CHAT MESSAGE (LINKED TO SUBSCRIBER)
+# SAFE: subscriber is now nullable so migration will succeed
 # ============================================================
 class ChatMessage(models.Model):
+    subscriber = models.ForeignKey(
+        EmailSubscriber,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="messages"
+    )
     text = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -124,4 +145,21 @@ class ChatMessage(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.text[:50]
+        if self.subscriber:
+            return f"{self.subscriber.email}: {self.text[:40]}"
+        return f"(Unknown): {self.text[:40]}"
+
+
+# ============================================================
+# 7. SCROLLING TICKER
+# ============================================================
+class TickerMessage(models.Model):
+    message = models.CharField(max_length=300)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message

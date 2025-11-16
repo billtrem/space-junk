@@ -9,60 +9,69 @@ from .models import (
     VideoFeed,
     ShopItem,
     ChatMessage,
+    TickerMessage,
+    EmailSubscriber,
 )
 
 
 # ============================================================
-# HOME PAGE  — livestream + preorder + chaotic chat
+# HELPER — Retrieve the active ticker
+# ============================================================
+def get_active_ticker():
+    return (
+        TickerMessage.objects.filter(is_active=True)
+        .order_by("-created_at")
+        .first()
+    )
+
+
+# ============================================================
+# HOME PAGE
 # ============================================================
 def home(request):
     site = SiteSettings.objects.first()
+    ticker = get_active_ticker()
 
-    # Active livestream (only one should be active)
     live_stream = LiveStream.objects.filter(is_live=True).first()
+    active_video = None if live_stream else VideoFeed.objects.filter(is_active=True).first()
 
-    # Fallback to a normal video feed
-    active_video = None
-    if not live_stream:
-        active_video = VideoFeed.objects.filter(is_active=True).first()
-
-    # Pick a featured item (first active)
     featured_item = (
         ShopItem.objects.filter(is_active=True)
         .order_by("title")
         .first()
     )
 
-    # Newest → oldest, but reversed in template for natural order
     chat_messages = ChatMessage.objects.order_by("-created_at")[:30]
 
-    context = {
+    # 🔥 FIX — YOU WERE MISSING THIS
+    shop_items = ShopItem.objects.filter(is_active=True).order_by("title")
+
+    return render(request, "siteapp/home.html", {
         "site": site,
+        "ticker": ticker,
         "live_stream": live_stream,
         "active_video": active_video,
         "featured_item": featured_item,
-        "chat_messages": reversed(chat_messages),  # oldest → newest
-    }
-
-    return render(request, "siteapp/home.html", context)
+        "chat_messages": reversed(chat_messages),
+        "shop_items": shop_items,  # ✅ NOW ADDED
+    })
 
 
 # ============================================================
-# TELESHOPPING PAGE — livestream + full chaotic chat
+# TELESHOPPING PAGE
 # ============================================================
 def teleshopping(request):
     site = SiteSettings.objects.first()
+    ticker = get_active_ticker()
 
     live_stream = LiveStream.objects.filter(is_live=True).first()
-
-    active_video = None
-    if not live_stream:
-        active_video = VideoFeed.objects.filter(is_active=True).first()
+    active_video = None if live_stream else VideoFeed.objects.filter(is_active=True).first()
 
     chat_messages = ChatMessage.objects.order_by("-created_at")[:60]
 
     return render(request, "siteapp/tele.html", {
         "site": site,
+        "ticker": ticker,
         "live_stream": live_stream,
         "active_video": active_video,
         "chat_messages": reversed(chat_messages),
@@ -74,13 +83,14 @@ def teleshopping(request):
 # ============================================================
 def products(request):
     site = SiteSettings.objects.first()
+    ticker = get_active_ticker()
     shop_items = ShopItem.objects.filter(is_active=True).order_by("title")
 
-    return render(
-        request,
-        "siteapp/products.html",
-        {"site": site, "shop_items": shop_items},
-    )
+    return render(request, "siteapp/products.html", {
+        "site": site,
+        "ticker": ticker,
+        "shop_items": shop_items,
+    })
 
 
 # ============================================================
@@ -88,50 +98,97 @@ def products(request):
 # ============================================================
 def contact(request):
     site = SiteSettings.objects.first()
+    ticker = get_active_ticker()
 
-    return render(
-        request,
-        "siteapp/contact.html",
-        {"site": site},
-    )
+    return render(request, "siteapp/contact.html", {
+        "site": site,
+        "ticker": ticker,
+    })
 
 
 # ============================================================
-# CHAOTIC CHAT — POST MESSAGE (AJAX)
-# Accepts JSON or form POST
+# EMAIL SIGNUP — AJAX
+# ============================================================
+@csrf_exempt
+def signup_email(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+    except:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
+
+    if not email:
+        return JsonResponse({"error": "Email required"}, status=400)
+
+    EmailSubscriber.objects.get_or_create(
+        email=email,
+        defaults={"name": name}
+    )
+
+    return JsonResponse({"status": "ok"})
+
+
+# ============================================================
+# CHAT — POST (Requires subscriber)
 # ============================================================
 @csrf_exempt
 def post_chat_message(request):
-    if request.method == "POST":
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
 
-        # Try JSON first
-        try:
-            data = json.loads(request.body)
-            text = data.get("text", "").strip()
-        except Exception:
-            # Fallback to form data
-            text = request.POST.get("text", "").strip()
+    try:
+        data = json.loads(request.body)
+    except:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        if text:
-            ChatMessage.objects.create(text=text)
+    text = data.get("text", "").strip()
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
 
-        return JsonResponse({"status": "ok"})
+    if not text:
+        return JsonResponse({"error": "Empty message"}, status=400)
 
-    return JsonResponse({"error": "Invalid request"}, status=400)
+    if not email:
+        return JsonResponse({"error": "Email required"}, status=400)
+
+    subscriber, created = EmailSubscriber.objects.get_or_create(
+        email=email,
+        defaults={"name": name}
+    )
+
+    ChatMessage.objects.create(
+        subscriber=subscriber,
+        text=text
+    )
+
+    return JsonResponse({"status": "ok"})
 
 
 # ============================================================
-# CHAOTIC CHAT — GET LATEST MESSAGES (AJAX)
+# CHAT — GET LATEST MESSAGES (SAFE)
 # ============================================================
 def get_chat_messages(request):
     messages = ChatMessage.objects.order_by("-created_at")[:50]
 
-    data = [
-        {
+    data = []
+    for m in reversed(messages):
+        if m.subscriber:
+            name = m.subscriber.name or "Guest"
+            email = m.subscriber.email
+        else:
+            name = "Guest"
+            email = ""
+
+        data.append({
+            "name": name,
+            "email": email,
             "text": m.text,
             "time": m.created_at.strftime("%H:%M:%S"),
-        }
-        for m in reversed(messages)  # oldest → newest
-    ]
+        })
 
     return JsonResponse(data, safe=False)
